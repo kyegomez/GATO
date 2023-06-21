@@ -1,12 +1,12 @@
 from setuptools import find_packages, setup
 
 setup(
-    name='gato-tf',
+    name='gato',
     version='0.0.4',
     description='Unofficial Gato: A Generalist Agent',
-    url='https://github.com/OrigamiDream/gato.git',
-    author='OrigamiDream',
-    author_email='hello@origamidream.me',
+    url='https://github.com/kyegomez/GATO',
+    author='Kye Gomez',
+    author_email='kye@apac.ai',
     long_description=open('README.md', 'r', encoding='utf-8').read(),
     long_description_content_type='text/markdown',
     license='MIT',
