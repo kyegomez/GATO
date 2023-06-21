@@ -37,62 +37,60 @@ There are 2 methods, git clone + pip:
 
 `pip install -r requirements.txt`
 
+Create new file:
+
+
 
 #### Method2
 ```bash
 $ pip install gato
 ```
 ```python
-import tensorflow as tf
-from gato import Gato, GatoConfig
+import torch
+from gato.gato import Gato, GatoConfig
 
-# Create model instance
+#create model instance
 config = GatoConfig.small()
 gato = Gato(config)
 
-# Fake inputs for Gato
-input_dim = config.input_dim
-input_ids = tf.concat([
-  # ...
-  # observation 1
-  tf.random.uniform((1, 1, input_dim)),  # image patch 0
-  tf.random.uniform((1, 1, input_dim)),  # image patch 1
-  tf.random.uniform((1, 1, input_dim)),  # image patch 2
-  # ...
-  tf.random.uniform((1, 1, input_dim)),  # image patch 19
-  tf.fill((1, 1, input_dim), value=0.25),  # continuous value
-  tf.fill((1, 1, input_dim), value=624.0),  # discrete (actions, texts)
 
-  # observation 2
-  tf.random.uniform((1, 1, input_dim)),  # image patch 0
-  tf.random.uniform((1, 1, input_dim)),  # image patch 1
-  tf.random.uniform((1, 1, input_dim)),  # image patch 2
-  # ...
-  tf.random.uniform((1, 1, input_dim)),  # image patch 19
-  tf.fill((1, 1, input_dim), value=0.12),  # continuous value
-  tf.fill((1, 1, input_dim), value=295.0)  # discrete (actions, texts)
-  # ...
-], axis=1)
-encoding = tf.constant([
-  # 0 - image patch embedding
-  # 1 - continuous value embedding
-  # 2 - discrete embedding (actions, texts)
-  [0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 1, 2]
+#fake inputs for Gato
+input_dim = config.input_dim
+input_ids = torch.cat([
+    torch.rand((1, 1, input_dim)) for _ in range(20)] + # 20 image patches
+    [torch.full((1, 1, input_dim), 0.25), #continous value]
+     torch.full((1, 1, input_dim), 624.0)] + #discrete (actions, texts)
+     [torch.rand((1, 1, input_dim)) for _ in range(20)] + #20 image patches
+     [torch.full((1, 1, input_dim), 0.12), #continous value
+      torch.full((1, 1, input_dim), 295.0)], #discrete( actions, text)
+      dim=1)
+
+encoding = torch.tensor([
+    [0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 1, 2]
 ])
+
 row_pos = (
-  tf.constant([[0.00, 0.25, 0.50, 0.75, 0, 0, 0.00, 0.25, 0.50, 0.75, 0, 0]]),  # pos_from
-  tf.constant([[0.25, 0.50, 0.75, 1.00, 0, 0, 0.25, 0.50, 0.75, 1.00, 0, 0]])   # pos_to
+    torch.tensor([[0.00, 0.25, 0.50, 0.75, 0, 0, 0.00, 0.25, 0.50, 0.75, 0, 0]]),  # pos_from
+    torch.tensor([[0.25, 0.50, 0.75, 1.00, 0, 0, 0.25, 0.50, 0.75, 1.00, 0, 0]])  # pos_to
 )
+
 col_pos = (
-  tf.constant([[0.00, 0.00, 0.00, 0.80, 0, 0, 0.00, 0.00, 0.00, 0.80, 0, 0]]),  # pos_from
-  tf.constant([[0.20, 0.20, 0.20, 1.00, 0, 0, 0.20, 0.20, 0.20, 1.00, 0, 0]])   # pos_to
+    torch.tensor([[0.00, 0.00, 0.00, 0.80, 0, 0, 0.00, 0.00, 0.00, 0.80, 0, 0]]),  # pos_from
+    torch.tensor([[0.20, 0.20, 0.20, 1.00, 0, 0, 0.20, 0.20, 0.20, 1.00, 0, 0]])  # pos_to
 )
+
+
 obs = (
-  tf.constant([[ 0,  1,  2, 19, 20, 21,  0,  1,  2, 19, 20, 21]]),  # obs token
-  tf.constant([[ 1,  1,  1,  1,  1,  0,  1,  1,  1,  1,  1,  0]])   # obs token masking (for action tokens)
+    torch.tensor([[ 0,  1,  2, 19, 20, 21,  0,  1,  2, 19, 20, 21]]),  # obs token
+    torch.tensor([[ 1,  1,  1,  1,  1,  0,  1,  1,  1,  1,  1,  0]])  # obs token masking (for action tokens)
 )
+
+
 hidden_states = gato((input_ids, (encoding, row_pos, col_pos), obs))
 ```
+
+
+
 ### Dataset and Model Architecture
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/5837620/215323793-7f7bcfdb-d8be-40d3-8e58-a053511f95d5.png">
