@@ -1,4 +1,4 @@
-<h1 align="center">Unofficial Gato: A Generalist Agent</h1>
+<h1 align="center">Gato: A Generalist Agent</h1>
 
 [[Deepmind Publication]](https://www.deepmind.com/publications/a-generalist-agent)
 [[arXiv Paper]](https://arxiv.org/pdf/2205.06175.pdf)
@@ -27,8 +27,20 @@ However, the repository lacks the following miscellaneous.
 But, you can still explore the basic architecture of the Gato based on the paper.
 
 ### Usage
+There are 2 methods, git clone + pip:
+
+##### Method1
+
+`git clone https://github.com/kyegomez/GATO.git`
+
+`cd GATO`
+
+`pip install -r requirements.txt`
+
+
+#### Method2
 ```bash
-$ pip install gato-tf
+$ pip install gato
 ```
 ```python
 import tensorflow as tf
@@ -175,11 +187,6 @@ $$
 In the definition of Appendix B., text tokens, image patch tokens, and discrete & continuous values are observation tokens<br>
 When Gato receives those values, they must be encoded with their own (local) time steps.
 
-## Requirements
-
-```bash
-pip install torch
-```
 
 ## Contributing
 [We welcome all contributions, please either submit a pull request or submit issues in the Agora discord](https://discord.gg/qUtxnK2NMf)
