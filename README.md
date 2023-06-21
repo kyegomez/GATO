@@ -186,3 +186,12 @@ pip install torch
 
 ## License
 Licensed under the [MIT license](/LICENSE).
+
+# Roadmap:
+
+* Get functional prototype
+
+* Integrate ALIBI, multi query, qk norm and other SOTA stuff
+
+* integrate action tokens
+
