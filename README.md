@@ -20,7 +20,7 @@ Currently, the repository supports the following operations:
 Action tokens are still a mystery in the paper, I need your help.
 
 However, the repository lacks the following miscellaneous.
-- Datasets (most important, Issue: [#1](https://github.com/OrigamiDream/gato/issues/1), [ThomasRochefortB/torch-gato](https://github.com/ThomasRochefortB/torch-gato/blob/main/datasets/README.md))
+- Datasets (most important, Issue: [#1](/datasets/README.md)
 - <s>Pre-trained tokenizers</s> (No longer required because of E2E model)
 - Training strategy (E2E, WIP)
 
