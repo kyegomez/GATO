@@ -1,3 +1,5 @@
+[![Multi-Modality](agorabanner.png)](https://discord.gg/qUtxnK2NMf)
+
 <h1 align="center">Gato: A Generalist Agent</h1>
 
 [[Deepmind Publication]](https://www.deepmind.com/publications/a-generalist-agent)
