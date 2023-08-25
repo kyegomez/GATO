@@ -1,2 +1,3 @@
 torch
-flash-attn
+zeta
+einops
