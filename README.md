@@ -15,11 +15,25 @@ $ pip install gato-torch
 
 ```python
 import torch
-from gato import Gato, GatoConfig
+from gato import Gato
 
 #create model instance
-config = GatoConfig.small()
-gato = Gato(config)
+gato = Gato(input_dim=768,
+            img_patch_size=16,
+            token_sequence_length=1024,
+            vocabulary_size=32000,
+            actions_size=1024,
+            continuous_values_size=1024,
+            num_transformer_blocks=8,
+            num_attention_heads=24,
+            layer_width=768,
+            feedforward_hidden_size=3072,
+            key_value_size=32,
+            dropout_rate=0.1,
+            num_group_norm_groups=32,
+            discretize_depth=128,
+            local_position_encoding_size=512,
+            max_seq_len=8192)
 
 
 #fake inputs for Gato
