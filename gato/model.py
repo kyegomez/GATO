@@ -4,7 +4,7 @@ from typing import Any, Dict, Union
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from zeta.nn import FlashAttention
+from zeta import FlashAttention
 
 
 class GatoConfig:
