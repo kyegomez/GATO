@@ -213,11 +213,15 @@ class ResidualEmbedding(nn.Module):
 
 class LocalPositionEncoding(nn.Module):
 
-    def __init__(self, config: Union[GatoConfig, Dict[str, Any]], trainable=True, name=None, *args, **kwargs):
+    def __init__(self, 
+                 config: Union[GatoConfig, Dict[str, Any]], 
+                 trainable=True,
+                 name=None, 
+                 *args, **kwargs):
         """
         Appendix C.3. Position Encodings > Local Observation Position Encodings
         """
-        super(LocalPositionEncoding, self).__init__(trainable=trainable, name=name, *args, **kwargs)
+        super(LocalPositionEncoding, self).__init__()
 
         if isinstance(config, dict):
             config = GatoConfig(**config)
