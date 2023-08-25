@@ -12,6 +12,7 @@ aper.
 ```bash
 $ pip install gato-torch
 ```
+
 ```python
 import torch
 from gato import Gato, GatoConfig
