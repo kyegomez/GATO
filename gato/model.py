@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from zeta import nn
+from zeta import FlashAttention
+
 
 def _randomized_positions(from_v, to_v):
     pos = torch.randint_like(from_v, from_v, to_v)
