@@ -8,6 +8,39 @@ from zeta import FlashAttention
 
 
 
+
+# embeddings
+def _randomized_positions(from_v, to_v):
+    pos = torch.rand_like(from_v) * (to_v - from_v)
+    return pos.int()
+
+
+def _rounded_mean_positions(from_v, to_v):
+    pos = (from_v + to_v).float() / 2
+    return pos.round()
+
+
+# tokenizer
+
+def mu_law_encode(x, mu=100, m=256):
+    numerator = torch.log(x.abs(), * mu + 1.0)
+    denominator = torch.log(m * mu + 1.0)
+    return (numerator / denominator) * x.sign()
+
+
+def tokenize_continous_value(x, mu=100, m=256, bins=1024, shift=None):
+    #appenddix B agent data tokenization
+    #finally they are discretized using bins of uniform width on the domain[-1, 1]
+    x = mu_law_encode(x, mu, m)
+
+    #we use 1024 bins and shift the resulting integers
+    #so they are not overlapping with the ones used for text tokens
+    c = (c + 1) * (bins / 2)  # noqa: F821
+    c = c.int()
+    if shift is not None:
+        c += shift
+    return c
+
 # config
 
 class GatoConfig:
@@ -90,19 +123,10 @@ class GatoConfig:
 
 #EMBEDDINGS
 
-def _randomized_positions(from_v, to_v):
-    pos = torch.rand_like(from_v) * (to_v - from_v)
-    return pos.int()
-
-
-def _rounded_mean_positions(from_v, to_v):
-    pos = (from_v + to_v).float() / 2
-    return pos.round()
 
 
 
 class PatchPositionEncoding(nn.Module):
-
     def __init__(self, config):
         super().__init__()
         self.embedding_dim = config.layer_width
@@ -144,7 +168,6 @@ class PatchPositionEncoding(nn.Module):
 
 
 class ResidualUnit(nn.Module):
-    
     def __init__(self, num_groups: int, filters: int):
         super().__init__()
         self.num_groups = num_groups
@@ -171,7 +194,6 @@ class ResidualUnit(nn.Module):
 
 
 class ResidualEmbedding(nn.Module):
-    
     def __init__(self, config):
         super().__init__()
 
@@ -212,7 +234,6 @@ class ResidualEmbedding(nn.Module):
 
 
 class LocalPositionEncoding(nn.Module):
-
     def __init__(self, 
                  config: Union[GatoConfig, Dict[str, Any]], 
                  trainable=True,
@@ -290,26 +311,6 @@ class PatchEmbedding(nn.Module):
         return super(PatchEmbedding, self).get_config()
 
 
-# tokenizer
-
-def mu_law_encode(x, mu=100, m=256):
-    numerator = torch.log(x.abs(), * mu + 1.0)
-    denominator = torch.log(m * mu + 1.0)
-    return (numerator / denominator) * x.sign()
-
-
-def tokenize_continous_value(x, mu=100, m=256, bins=1024, shift=None):
-    #appenddix B agent data tokenization
-    #finally they are discretized using bins of uniform width on the domain[-1, 1]
-    x = mu_law_encode(x, mu, m)
-
-    #we use 1024 bins and shift the resulting integers
-    #so they are not overlapping with the ones used for text tokens
-    c = (c + 1) * (bins / 2)  # noqa: F821
-    c = c.int()
-    if shift is not None:
-        c += shift
-    return c
 
 class ContinousValueTokenizer(nn.Module):
     def __init__(self, config, mu=100, m=256, bins=1024):
@@ -392,11 +393,8 @@ class Transformer(nn.Module):
         
         return x
 
-
     def get_config(self):
         return super(Transformer, self).get_config()
-
-
 
 
 class Gato(nn.Module):

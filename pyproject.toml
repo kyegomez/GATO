@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gato-torch"
-version = "0.0.1"
+version = "0.0.2"
 description = "Gato: A Generalist Agent"
 authors = ["Kye Gomez <kye@apac.ai>"]
 license = "MIT"
