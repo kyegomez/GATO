@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "gato"
+version = "0.0.1"
+description = "Gato: A Generalist Agent"
+authors = ["Kye Gomez <kye@apac.ai>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/kyegomez/GATO"
+keywords = ["deep learning", "gato", "tensorflow"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10"
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+torch = "*"
+zetascale = "*"
+einops = "*"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

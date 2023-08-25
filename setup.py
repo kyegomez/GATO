@@ -12,15 +12,15 @@ setup(
     license='MIT',
     packages=find_packages(exclude=[]),
     install_requires=[
-        'tensorflow>=2.11',
-        'flowchain>=0.0.4'
+        'torch',
+        'zetascale',
+        'einops'
     ],
     python_requires='>=3.10.0',
     keywords=[
         'deep learning',
         'gato',
         'tensorflow',
-        'generalist agent'
     ],
     classifiers=[
         'Development Status :: 4 - Beta',
