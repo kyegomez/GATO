@@ -195,6 +195,8 @@ class PatchEmbedding(nn.Module):
                  layer_width,
                  img_patch_size):
         super(PatchEmbedding, self).__init__()
+        self.img_patch_size = img_patch_size
+        self.input_dim = input_dim
 
         self.residual_embedding = ResidualEmbedding(input_dim, num_group_norm_groups, layer_width)
         self.pos_encoding = PatchPositionEncoding(layer_width, input_dim, img_patch_size)
