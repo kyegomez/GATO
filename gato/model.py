@@ -188,18 +188,23 @@ class Transformer(nn.Module):
             x = encoder(x)
         return x
 
+
 class PatchEmbedding(nn.Module):
-    def __init__(self, 
+    def __init__(self,
                  input_dim,
                  num_group_norm_groups,
                  layer_width,
                  img_patch_size):
         super(PatchEmbedding, self).__init__()
-        self.img_patch_size = img_patch_size
+        self.img_patch_sizer = img_patch_size
         self.input_dim = input_dim
 
-        self.residual_embedding = ResidualEmbedding(input_dim, num_group_norm_groups, layer_width)
-        self.pos_encoding = PatchPositionEncoding(layer_width, input_dim, img_patch_size)
+        self.residual_embedding = ResidualEmbedding(input_dim,
+                                                    num_group_norm_groups,
+                                                    layer_width)
+        self.pos_encoding = PatchPositionEncoding(layer_width, 
+                                                  input_dim,
+                                                  img_patch_size)
     
     def forward(self, inputs):
         input_ids, (row_pos, col_pos) = inputs
@@ -207,10 +212,9 @@ class PatchEmbedding(nn.Module):
         depth = self.input_dim // (patch_size * patch_size)
 
         x = input_ids.view(-1, input_ids.size(1), patch_size, patch_size, depth)
-        x = self.residual_embedding(x)
+        x = self.resiudal_embedding(x)
         x = self.pos_encoding((x, (row_pos, col_pos)))
         return x
-    
 
 class Gato(nn.Module):
     def __init__(self,
