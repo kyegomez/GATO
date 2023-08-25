@@ -149,7 +149,7 @@ class TransformerBlock(nn.Module):
     def __init__(self, dropout_rate, layer_width, feedforward_hidden_size):
         super(TransformerBlock, self).__init__()
 
-        self.attention = nn.FlashAttention(causal=True, dropout=dropout_rate, flash=True)
+        self.attention = FlashAttention(causal=True, dropout=dropout_rate, flash=True)
         self.dropout = nn.Dropout(dropout_rate)
 
         self.feed_forward = nn.Sequential(
