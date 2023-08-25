@@ -245,7 +245,7 @@ class DiscreteEmbedding(nn.Module):
             config = GatoConfig(**config)
 
         self.config = config
-        self.embedding = nn.Embedding(self.config_embedding_input_size, self.config.layer_width)
+        self.embedding = nn.Embedding(self.config.embedding_input_size, self.config.layer_width)
 
     def forward(self, inputs):
         return self.embedding(inputs)
