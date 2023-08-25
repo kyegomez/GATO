@@ -5,51 +5,16 @@
 [[Deepmind Publication]](https://www.deepmind.com/publications/a-generalist-agent)
 [[arXiv Paper]](https://arxiv.org/pdf/2205.06175.pdf)
 
-This repository contains Deepmind's Gato architecture imitation in torch.
+aper.
 
-Since Deepmind only mentions parts of the architecture in its paper, We still don't know much about the model.<br>
-However, I believe the paper is enough to imitate the architecture, I'm trying to do that with the open source community's help.
+### Installation
 
-Currently, the repository supports the following operations:
-- Gato (via [`Gato`](/gato/gato/models/__init__.py))
-- Transformer (via [`Transformer`](/gato/gato/models/transformer.py))
-- Patch Position Encodings (via [`PatchPositionEncoding`](/gato/gato/models/embedding.py))
-- Embedding Function (via [`ResidualEmbedding`](gato/gato/models/embedding.py))
-- Local Observation Position Encodings (via [`LocalPositionEncoding`](gato/gato/models/embedding.py))
-- Tokenizing Continuous Values (via [`ContinuousValueTokenizer`](gato/gato/models/tokenizers.py))
-- Shared Embedding (via [`DiscreteEmbedding`](gato/gato/models/embedding.py))
-
-Action tokens are still a mystery in the paper, I need your help.
-
-However, the repository lacks the following miscellaneous.
-- Datasets (most important, Issue: [#1](/datasets/README.md)
-- <s>Pre-trained tokenizers</s> (No longer required because of E2E model)
-- Training strategy (E2E, WIP)
-
-But, you can still explore the basic architecture of the Gato based on the paper.
-
-### Usage
-There are 2 methods, git clone + pip:
-
-##### Method1
-
-`git clone https://github.com/kyegomez/GATO.git`
-
-`cd GATO`
-
-`pip install -r requirements.txt`
-
-Create new file:
-
-
-
-#### Method2
 ```bash
-$ pip install gato
+$ pip install gato-torch
 ```
 ```python
 import torch
-from gato.gato import Gato, GatoConfig
+from gato import Gato, GatoConfig
 
 #create model instance
 config = GatoConfig.small()
