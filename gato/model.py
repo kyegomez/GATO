@@ -337,13 +337,13 @@ class TransformerBlock(nn.Module):
         #may be unnecessary
         self.dropout = nn.Dropout(config.dropout_rate)
 
-        self.feed_forward(nn.Sequential(
+        self.feed_forward = nn.Sequential(
             nn.Linear(in_features=config.layer_width, out_features=config.feedforward_hidden_size),
             nn.GELU(),
             nn.Dropout(config.dropout_rate),
             nn.Linear(in_features=config.feedforward_hidden_size, out_features=config.layer_width),
             nn.Dropout(config.dropout_rate)
-        ))
+        )
 
         self.layer_norm1 = nn.LayerNorm(normalized_shape=config.layer_width, eps=1e-6)
         self.layer_norm2 = nn.LayerNorm(normalized_shape=config.layer_width, eps=1e-6)
