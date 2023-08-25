@@ -1,27 +1,12 @@
 import torch
-from gato import Gato
+from gato import Gato, GatoConfig
 
 # Create model instance
-# Create an instance of Gato
-gato = Gato(input_dim=768,
-            img_patch_size=16,
-            token_sequence_length=1024,
-            vocabulary_size=32000,
-            actions_size=1024,
-            continuous_values_size=1024,
-            num_transformer_blocks=8,
-            num_attention_heads=24,
-            layer_width=768,
-            feedforward_hidden_size=3072,
-            key_value_size=32,
-            dropout_rate=0.1,
-            num_group_norm_groups=32,
-            discretize_depth=128,
-            local_position_encoding_size=512,
-            max_seq_len=8192)
+config = GatoConfig.small()
+gato = Gato(config)
 
 # Fake inputs for Gato
-input_dim = 768
+input_dim = config.input_dim
 input_ids = torch.cat([
     torch.rand((1, 1, input_dim)) for _ in range(20)] +  # 20 image patches
     [torch.full((1, 1, input_dim), 0.25),  # continuous value
