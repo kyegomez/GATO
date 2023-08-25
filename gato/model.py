@@ -7,6 +7,9 @@ import torch.nn.functional as F
 from zeta import FlashAttention
 
 
+
+# config
+
 class GatoConfig:
     @staticmethod
     def large():
@@ -258,6 +261,31 @@ class DiscreteEmbedding(nn.Module):
         return config
     
 
+class PatchEmbedding(nn.Module):
+    def __init__(self, config):
+        super(PatchEmbedding, self).__init__()
+
+        if isinstance(config, dict):
+            config = GatoConfig(**config)
+        self.config = config
+
+        self.residual_embedding = ResidualEmbedding(config)
+        self.pos_encoding = PatchPositionEncoding(config)
+    
+    def forward(self, inputs):
+        input_ids, (row_pos, col_pos) = inputs
+        patch_size = self.config.img_patch_size
+        depth = self.config.input_dim // (patch_size * patch_size)
+
+        x = input_ids.view(-1, input_ids.size(1), patch_size, patch_size, depth)
+        x = self.residual_embedding(x)
+        x = self.pos_encoding((x, (row_pos, col_pos)))
+        return x
+
+    def get_config(self):
+        return super(PatchEmbedding, self).get_config()
+
+
 # tokenizer
 
 def mu_law_encode(x, mu=100, m=256):
@@ -365,29 +393,6 @@ class Transformer(nn.Module):
         return super(Transformer, self).get_config()
 
 
-class PatchEmbedding(nn.Module):
-    def __init__(self, config):
-        super(PatchEmbedding, self).__init__()
-
-        if isinstance(config, dict):
-            config = GatoConfig(**config)
-        self.config = config
-
-        self.residual_embedding = ResidualEmbedding(config)
-        self.pos_encoding = PatchPositionEncoding(config)
-    
-    def forward(self, inputs):
-        input_ids, (row_pos, col_pos) = inputs
-        patch_size = self.config.img_patch_size
-        depth = self.config.input_dim // (patch_size * patch_size)
-
-        x = input_ids.view(-1, input_ids.size(1), patch_size, patch_size, depth)
-        x = self.residual_embedding(x)
-        x = self.pos_encoding((x, (row_pos, col_pos)))
-        return x
-
-    def get_config(self):
-        return super(PatchEmbedding, self).get_config()
 
 
 class Gato(nn.Module):
@@ -427,3 +432,4 @@ class Gato(nn.Module):
     
     def get_config(self):
         return super(Gato, self).get_config()
+    
