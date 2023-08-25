@@ -1,1 +1,1 @@
-from gato.model import Gato, GatoConfig
+from gato.model import Gato

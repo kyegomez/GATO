@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import zeta
+from zeta import nn
 
 def _randomized_positions(from_v, to_v):
     pos = torch.randint_like(from_v, from_v, to_v)
@@ -67,7 +67,10 @@ class ResidualUnit(nn.Module):
         return x + residual
 
 class ResidualEmbedding(nn.Module):
-    def __init__(self, input_dim, num_group_norm_groups, layer_width):
+    def __init__(self, 
+                 input_dim, 
+                 num_group_norm_groups, 
+                 layer_width):
         super(ResidualEmbedding, self).__init__()
 
         self.root_conv = nn.Sequential(
@@ -146,7 +149,7 @@ class TransformerBlock(nn.Module):
     def __init__(self, dropout_rate, layer_width, feedforward_hidden_size):
         super(TransformerBlock, self).__init__()
 
-        self.attention = zeta.nn.FlashAttention(causal=True, dropout=dropout_rate, flash=True)
+        self.attention = nn.FlashAttention(causal=True, dropout=dropout_rate, flash=True)
         self.dropout = nn.Dropout(dropout_rate)
 
         self.feed_forward = nn.Sequential(
@@ -173,10 +176,11 @@ class TransformerBlock(nn.Module):
     
 
 class Transformer(nn.Module):
-    def __init__(self, num_transformer_blocks):
+    def __init__(self, num_transformer_blocks, dropout_rate, layer_width, feedforward_hidden_size):
         super(Transformer, self).__init__()
 
-        self.encoders = nn.ModuleList([TransformerBlock() for _ in range(num_transformer_blocks)])
+        self.encoders = nn.ModuleList([TransformerBlock(dropout_rate, layer_width, feedforward_hidden_size) 
+                                       for _ in range(num_transformer_blocks)])
 
     def forward(self, inputs):
         x = inputs
@@ -184,14 +188,17 @@ class Transformer(nn.Module):
             x = encoder(x)
         return x
 
-
 class PatchEmbedding(nn.Module):
-    def __init__(self, img_patch_size, input_dim):
+    def __init__(self, 
+                 input_dim,
+                 num_group_norm_groups,
+                 layer_width,
+                 img_patch_size):
         super(PatchEmbedding, self).__init__()
 
-        self.residual_embedding = ResidualEmbedding(input_dim)
-        self.pos_encoding = PatchPositionEncoding(input_dim, img_patch_size)
-
+        self.residual_embedding = ResidualEmbedding(input_dim, num_group_norm_groups, layer_width)
+        self.pos_encoding = PatchPositionEncoding(layer_width, input_dim, img_patch_size)
+    
     def forward(self, inputs):
         input_ids, (row_pos, col_pos) = inputs
         patch_size = self.img_patch_size
@@ -227,28 +234,23 @@ class Gato(nn.Module):
         self.img_patch_size = img_patch_size
         self.token_sequence_length = token_sequence_length
         self.vocabulary_size = vocabulary_size
-
         self.actions_size = actions_size
         self.continuous_values_size = continuous_values_size
         self.num_transformer_blocks = num_transformer_blocks
-
         self.num_attention_heads = num_attention_heads
         self.layer_width = layer_width
         self.feedforward_hidden_size = feedforward_hidden_size
-
         self.key_value_size = key_value_size
         self.dropout_rate = dropout_rate
         self.num_group_norm_groups = num_group_norm_groups
-
         self.discretize_embedding = discretize_depth
         self.local_position_encoding_size = local_position_encoding_size
         self.max_seq_len = max_seq_len
 
-        self.image_embedding = PatchEmbedding(img_patch_size, input_dim)
+        self.image_embedding = PatchEmbedding(input_dim, num_group_norm_groups, layer_width, img_patch_size)
         self.discrete_embedding = DiscreteEmbedding(vocabulary_size, layer_width)
         self.continuous_encoding = ContinousValueTokenizer(vocabulary_size)
-        
-        self.transformer = Transformer(num_transformer_blocks)
+        self.transformer = Transformer(num_transformer_blocks, dropout_rate, layer_width, feedforward_hidden_size)
         self.local_pos_encoding = LocalPositionEncoding(layer_width, token_sequence_length)
 
     def forward(self, inputs):
