@@ -5,7 +5,7 @@
 [[Deepmind Publication]](https://www.deepmind.com/publications/a-generalist-agent)
 [[arXiv Paper]](https://arxiv.org/pdf/2205.06175.pdf)
 
-* Help with the implementation in the Agora discord, ![Discord](https://img.shields.io/discord/999382051935506503)
+* Please Help with this open source implementation in the Agora discord, ![Discord](https://img.shields.io/discord/999382051935506503)
 
 
 ### Installation
