@@ -1,5 +1,5 @@
 import torch
-from gato import Gato, GatoConfig
+from gato.model import Gato, GatoConfig
 
 # Create model instance
 config = GatoConfig.small()
