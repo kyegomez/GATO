@@ -296,7 +296,7 @@ def tokenize_continous_value(x, mu=100, m=256, bins=1024, shift=None):
 
     #we use 1024 bins and shift the resulting integers
     #so they are not overlapping with the ones used for text tokens
-    c = (c + 1) * (bins / 2)  # noqa: F821
+    c = (x + 1) * (bins / 2)  # noqa: F821
     c = c.int()
     if shift is not None:
         c += shift
