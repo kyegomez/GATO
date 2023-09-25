@@ -197,7 +197,6 @@ class FlashAttention(nn.Module):
 
         # Check if there is a compatible device for flash attention
 
-        config = self.cuda_config if is_cuda else self.cpu_config
 
         # pytorch 2.0 flash attn: q, k, v, mask, dropout, causal, softmax_scale
         
