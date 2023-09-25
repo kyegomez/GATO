@@ -427,14 +427,37 @@ class PatchPositionEncoding(nn.Module):
     
 
 class ResidualUnit(nn.Module):
-    def __init__(self, num_groups: int, filters: int):
+    def __init__(
+            self, 
+            num_groups: int, 
+            filters: int
+        ):
         super().__init__()
         self.num_groups = num_groups
         self.filters = filters
-        self.conv1 = nn.Conv2d(in_channels=filters, out_channels=filters//2, kernel_size=3, stride=1, padding=1)
-        self.conv2 = nn.Conv2d(in_channels=filters//2, out_channels=filters, kernel_size=3, stride=2, padding=1)
+        self.conv1 = nn.Conv2d(
+            in_channels=filters, 
+            out_channels=filters//2, 
+            kernel_size=3, 
+            stride=1, 
+            padding=1
+        )
+        self.conv2 = nn.Conv2d(
+            in_channels=filters//2, 
+            out_channels=filters, 
+            kernel_size=3, 
+            stride=2, 
+            padding=1
+        )
         
-        self.conv_proj = nn.Conv2d(in_channels=filters, out_channels=filters, kernel_size=1, stride=2, padding=0)
+        self.conv_proj = nn.Conv2d(
+            in_channels=filters, 
+            out_channels=filters, 
+            kernel_size=1, 
+            stride=2, 
+            padding=0
+        )
+
         self.gn1 = nn.GroupNorm(num_groups=self.num_groups, num_channels=filters)
         self.gn2 = nn.GroupNorm(num_groups=self.num_groups, num_channels=filters//2)
         self.gn_proj = nn.GroupNorm(num_groups=self.num_groups, num_channels=filters)
@@ -481,9 +504,14 @@ class ResidualEmbedding(nn.Module):
             nn.GELU()
         )
 
-        self.residual_units = nn.ModuleList([ResidualUnit(num_groups=self.num_group_norm_groups,
-                                                          filters=96 * 2 ** (i + 1))
-                                                          for i in range(3)])
+        self.residual_units = nn.ModuleList(
+            [
+                ResidualUnit(
+                    num_groups=self.num_group_norm_groups,
+                    filters=96 * 2 ** (i + 1)
+                ) for i in range(3)
+            ]
+        )
         
         if self.input_dim != self.layer_width:
             self.conv_proj = nn.Conv2d(
@@ -732,10 +760,20 @@ class Gato(nn.Module):
         self.max_seq_len = max_seq_len
 
 
-        self.image_embedding = PatchEmbedding(self.img_patch_size, self.input_dim)
-        self.discrete_embedding = DiscreteEmbedding(self.embedding_size, self.layer_width)
+        self.image_embedding = PatchEmbedding(
+            self.img_patch_size, 
+            self.input_dim
+        )
+        
+        self.discrete_embedding = DiscreteEmbedding(
+            self.embedding_size, 
+            self.layer_width
+        )
+
         self.continuous_encoding = ContinousValueTokenizer(self.vocabulary_size)
+
         self.transformer = Transformer(self.num_transformer_blocks)
+
         self.local_pos_encoding = LocalPositionEncoding(
             self.token_sequence_length,
             self.layer_width
