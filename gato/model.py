@@ -13,7 +13,14 @@ from torch import Tensor, einsum
 
 # constants
 
-EfficientAttentionConfig = namedtuple('EfficientAttentionConfig', ['enable_flash', 'enable_math', 'enable_mem_efficient'])
+EfficientAttentionConfig = namedtuple(
+    'EfficientAttentionConfig', 
+    [
+        'enable_flash', 
+        'enable_math', 
+        'enable_mem_efficient'
+    ]
+)
 
 # helpers
 
@@ -658,56 +665,69 @@ class Transformer(nn.Module):
 
 class Gato(nn.Module):
     def __init__(
-            self, 
-            img_patch_size: int = 16,
-            input_dim: int = 768,
-            token_sequence_length: int = 1024,
-            vocabulary_size: int = 32000,
-            actions_size: int = 1024,
-            continuous_values_size: int = 1024,
-            num_transformer_blocks: int = 8,
-            num_attention_heads: int = 24,
-            layer_width: int = 768,
-            feedforward_hidden_size: int = 3072,
-            key_value_size: int = 32,
-            dropout_rate: float = 0.1,
-            num_group_norm_groups: int = 32,
-            discretize_depth: int = 128,
-            local_position_encoding_size: int = 512,
-            max_seq_len: int = 8192,
-        ):
+        self, 
+        img_patch_size: int = 16,
+        input_dim: int = 768,
+        token_sequence_length: int = 1024,
+        vocabulary_size: int = 32000,
+        actions_size: int = 1024,
+        continuous_values_size: int = 1024,
+        num_transformer_blocks: int = 8,
+        num_attention_heads: int = 24,
+        layer_width: int = 768,
+        feedforward_hidden_size: int = 3072,
+        key_value_size: int = 32,
+        dropout_rate: float = 0.1,
+        num_group_norm_groups: int = 32,
+        discretize_depth: int = 128,
+        local_position_encoding_size: int = 512,
+        max_seq_len: int = 8192,
+    ):
         super(Gato, self).__init__()
+
         self.img_patch_size = img_patch_size
         self.input_dim = input_dim
         self.token_sequence_length = token_sequence_length
+
         self.vocabulary_size = vocabulary_size
         self.actions_size = actions_size
         self.continuous_values_size = continuous_values_size
+
         self.num_transformer_blocks = num_transformer_blocks
         self.num_attention_heads = num_attention_heads
         self.layer_width = layer_width
+
         self.feedforward_hidden_size = feedforward_hidden_size
         self.key_value_size = key_value_size
         self.dropout_rate = dropout_rate
+
         self.num_group_norm_groups = num_group_norm_groups
         self.discretize_depth = discretize_depth
         self.local_position_encoding_size = local_position_encoding_size
-        self.max_seq_len = max_seq_len
 
+        self.max_seq_len = max_seq_len
 
         self.image_embedding = PatchEmbedding(
             self.img_patch_size, 
-            self.input_dim
+            self.input_dim,
+            self.num_group_norm_groups,
+            self.layer_width,
+            self.discretize_depth
         )
         
         self.discrete_embedding = DiscreteEmbedding(
-            self.embedding_size, 
+            self.input_dim, 
             self.layer_width
         )
 
         self.continuous_encoding = ContinousValueTokenizer(self.vocabulary_size)
 
-        self.transformer = Transformer(self.num_transformer_blocks)
+        self.transformer = Transformer(
+            self.num_transformer_blocks,
+            self.dropout_rate,
+            self.layer_width,
+            self.feedforward_hidden_size,
+        )
 
         self.local_pos_encoding = LocalPositionEncoding(
             self.token_sequence_length,
@@ -718,7 +738,7 @@ class Gato(nn.Module):
         input_ids, (encoding, row_pos, col_pos), (obs_pos, obs_mask) = inputs
         encoding = F.one_hot(encoding, num_classes=3).float()
 
-        ones = torch.ones((input_ids.size(0), 1, self.self.layer_width))
+        ones = torch.ones((input_ids.size(0), 1, self.layer_width))
         image_embed = self.image_embedding((input_ids, (row_pos, col_pos)))
         image_embed *= encoding[..., 0].unsqueeze(-1).matmul(ones)
 
