@@ -548,6 +548,8 @@ class PatchEmbedding(nn.Module):
         depth = self.input_dim // (patch_size * patch_size)
 
         x = input_ids.view(-1, input_ids.size(1), patch_size, patch_size, depth)
+        x = x.permute(0, 1, 4, 2, 3).contiguous()
+
         x = self.residual_embedding(x)
         x = self.pos_encoding((x, (row_pos, col_pos)))
         return x
@@ -739,6 +741,7 @@ class Gato(nn.Module):
         encoding = F.one_hot(encoding, num_classes=3).float()
 
         ones = torch.ones((input_ids.size(0), 1, self.layer_width))
+        
         image_embed = self.image_embedding((input_ids, (row_pos, col_pos)))
         image_embed *= encoding[..., 0].unsqueeze(-1).matmul(ones)
 

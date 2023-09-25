@@ -1,0 +1,1 @@
+from gato.model import *

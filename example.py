@@ -1,31 +1,34 @@
 import torch
-from gato.model import Gato
+from torch import nn
+from torch.nn import functional as F
 
-# Model hyperparameters
-img_patch_size = 16  
-input_dim = 768
-token_sequence_length = 1024
+from gato import Gato
+
+# Assuming the necessary modules (PatchEmbedding, DiscreteEmbedding, ContinousValueTokenizer, Transformer, LocalPositionEncoding) are defined
+
+# Initialize the model
+model = Gato()
+
+batch_size = 2
+seq_len = 1024
 layer_width = 768
+patch_size = 16
+depth = 3
+# Create random inputs
+image_height = 16
+image_width = 16
+num_channels = 3
 
-# Create model
-model = Gato(img_patch_size=img_patch_size, 
-             input_dim=input_dim,
-             token_sequence_length=token_sequence_length,
-             layer_width=layer_width)
-
-# Random input tensors  
-batch_size = 4
-seq_len = 32
-
-input_ids = torch.randint(0, 255, (batch_size, seq_len, img_patch_size, img_patch_size, 3)).float() 
+input_ids = torch.randint(0, 32000, (batch_size, num_channels, image_height, image_width)).float()
 encoding = torch.randint(0, 3, (batch_size, seq_len))
-row_pos = torch.rand(batch_size, seq_len)  
-col_pos = torch.rand(batch_size, seq_len)
-obs_pos = torch.randint(0, token_sequence_length, (batch_size, seq_len))
-obs_mask = torch.ones(batch_size, seq_len)
+row_pos = torch.randint(0, 16, (batch_size, seq_len))
+col_pos = torch.randint(0, 16, (batch_size, seq_len))
+obs_pos = torch.randint(0, 8192, (batch_size, seq_len))
+obs_mask = torch.randint(0, 2, (batch_size, seq_len)).bool()
 
 inputs = (input_ids, (encoding, row_pos, col_pos), (obs_pos, obs_mask))
 
-outputs = model(inputs)
+# Forward pass
+hidden_states = model(inputs)
 
-print(outputs.shape)
+print(hidden_states.shape)  # Expected: [batch_size, seq_len, layer_width]
