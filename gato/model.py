@@ -310,14 +310,15 @@ def tokenize_continous_value(x, mu=100, m=256, bins=1024, shift=None):
 class PatchPositionEncoding(nn.Module):
     def __init__(
             self, 
-            dim,
+            embedding_dim,
             discretize_depth,
             img_patch_size
         ):
         super().__init__()
-        self.embedding_dim = self.layer_width
-        self.discretize_depth = self.discretize_depth
-        self.patch_size = self.img_patch_size
+        self.embedding_dim = embedding_dim
+        self.discretize_depth = discretize_depth
+        self.img_patch_size = img_patch_size
+
 
         self.row_embedding = nn.Embedding(self.discretize_depth, self.embedding_dim)
         self.col_embedding = nn.Embedding(self.discretize_depth, self.embedding_dim)
@@ -357,6 +358,7 @@ class ResidualUnit(nn.Module):
         super().__init__()
         self.num_groups = num_groups
         self.filters = filters
+
         self.conv1 = nn.Conv2d(
             in_channels=filters, 
             out_channels=filters//2, 
@@ -473,6 +475,8 @@ class LocalPositionEncoding(nn.Module):
         super(LocalPositionEncoding, self).__init__()
         self.token_sequence_length = token_sequence_length
         self.layer_width = layer_width
+        self.trainable = trainable
+        self.name = name
 
 
         self.embedding = nn.Embedding(self.token_sequence_length, self.layer_width)
@@ -518,6 +522,7 @@ class PatchEmbedding(nn.Module):
         self.input_dim = input_dim
         self.num_group_norm_groups = num_group_norm_groups
         self.discretize_depth = discretize_depth
+        self.layer_width = layer_width
 
         self.residual_embedding = ResidualEmbedding(
             self.input_dim,
@@ -551,7 +556,6 @@ class ContinousValueTokenizer(nn.Module):
         ):
         super(ContinousValueTokenizer, self).__init__()
         self.vocab_size = vocab_size
-
         self.mu = mu
         self.m = m
         self.bins = bins
@@ -574,6 +578,10 @@ class TransformerBlock(nn.Module):
             feedforward_hidden_size,
         ):
         super(TransformerBlock, self).__init__()
+        self.dropout_rate = dropout_rate
+        self.layer_width = layer_width
+        self.feedforward_hidden_size = feedforward_hidden_size
+
 
         self.attention = FlashAttention(causal=True, dropout=0.1, flash=True)
         
@@ -619,13 +627,24 @@ class Transformer(nn.Module):
     def __init__(
             self, 
             num_transformer_blocks,
+            dropout_rate,
+            layer_width,
+            feedforward_hidden_size,
         ):
         super(Transformer, self).__init__()
+        self.num_transformer_blocks = num_transformer_blocks
+        self.dropout_rate = dropout_rate
+        self.layer_width = layer_width
+        self.feedforward_hidden_size = feedforward_hidden_size
 
 
         self.encoders = nn.ModuleList(
             [
-                TransformerBlock(config) for _ in range(self.num_transformer_blocks)
+                TransformerBlock(
+                    self.dropout_rate,
+                    self.layer_width,
+                    self.feedforward_hidden_size
+                ) for _ in range(self.num_transformer_blocks)
             ]
         )
 
