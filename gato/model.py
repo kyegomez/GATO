@@ -301,88 +301,9 @@ def tokenize_continous_value(x, mu=100, m=256, bins=1024, shift=None):
         c += shift
     return c
 
-# config
 
-class GatoConfig:
-    @staticmethod
-    def large():
-        return GatoConfig(num_transformer_blocks=24,
-                          num_attention_heads=16,
-                          layer_width=2048,
-                          feedforward_hidden_size=8192,
-                          key_value_size=128)
-
-    @staticmethod
-    def baseline():
-        return GatoConfig(num_transformer_blocks=12,
-                          num_attention_heads=12,
-                          layer_width=1536,
-                          feedforward_hidden_size=6144,
-                          key_value_size=128)
-
-    @staticmethod
-    def small():
-        return GatoConfig(num_transformer_blocks=8,
-                          num_attention_heads=24,
-                          layer_width=768,
-                          feedforward_hidden_size=3072,
-                          key_value_size=32)
-
-    def __init__(self, **kwargs):
-        self.input_dim = kwargs.pop('input_dim', 768)
-        self.img_patch_size = kwargs.pop('img_patch_size', 16)
-
-        # Section 2.3. Training
-        self.token_sequence_length = kwargs.pop('token_sequence_length', 1024)
-
-        # Section 2.1. Tokenization
-        # Text - SentencePiece
-        self.vocabulary_size = kwargs.pop('vocabulary_size', 32000)
-        # Discrete values
-        self.actions_size = kwargs.pop('actions_size', 1024)
-        # Continuous values
-        self.continuous_values_size = kwargs.pop('continuous_values_size', 1024)
-
-        # Appendix C.1. Transformer Hyperparameters
-        self.num_transformer_blocks = kwargs.pop('num_transformer_blocks', 8)
-        self.num_attention_heads = kwargs.pop('num_attention_heads', 24)
-        self.layer_width = kwargs.pop('layer_width', 768)
-        self.feedforward_hidden_size = kwargs.pop('feedforward_hidden_size', 3072)
-        self.key_value_size = kwargs.pop('key_value_size', 32)
-
-        # Appendix E. Regularization
-        self.dropout_rate = kwargs.pop('dropout_rate', 0.1)
-
-        # Appendix C.2. Embedding Function
-        self.num_group_norm_groups = kwargs.pop('num_group_norm_groups', 32)
-
-        # Appendix C.3. Position Encodings > Patch Position Encodings
-        self.discretize_depth = kwargs.pop('discretize_depth', 128)
-        # Appendix C.3. Position Encodings > Local Observation Position Encodings
-        self.local_position_encoding_size = kwargs.pop('local_position_encoding_size', 512)
-
-        self.max_seq_len = kwargs.pop('max_seq_len', 8192)
-
-    @property
-    def embedding_input_size(self):
-        return self.vocabulary_size + self.continuous_values_size + self.actions_size + 1
-
-    @property
-    def output_target_size(self):
-        return self.vocabulary_size + self.actions_size
-
-    def to_dict(self) -> Dict[str, Any]:
-        output = copy.deepcopy(self.__dict__)
-        return output
-
-    @classmethod
-    def from_dict(cls, config_dict: Dict[str, Any]) -> "GatoConfig":
-        config = cls(**config_dict)
-        return config
-    
 
 #EMBEDDINGS
-
 
 
 
@@ -421,7 +342,9 @@ class PatchPositionEncoding(nn.Module):
             row_pos = _rounded_mean_positions(row_pos_from, row_pos_to)
             col_pos = _rounded_mean_positions(col_pos_from, col_pos_to)
 
-        return input_ids + self.row_embedding(row_pos.long()) + self.col_embedding(col_pos.long())
+        return input_ids + self.row_embedding(
+            row_pos.long()
+        ) + self.col_embedding(col_pos.long())
 
     
 
@@ -485,7 +408,6 @@ class ResidualEmbedding(nn.Module):
         self.input_dim = input_dim
         self.num_group_norm_groups = num_group_norm_groups
         self.layer_width = layer_width
-        self.input_dim = input_dim
 
         self.root_conv = nn.Sequential(
             nn.Conv2d(
@@ -540,7 +462,6 @@ class LocalPositionEncoding(nn.Module):
             self,
             token_sequence_length,
             layer_width,
-            config: Union[GatoConfig, Dict[str, Any]], 
             trainable=True,
             name=None, 
             *args, 
@@ -553,9 +474,7 @@ class LocalPositionEncoding(nn.Module):
         self.token_sequence_length = token_sequence_length
         self.layer_width = layer_width
 
-        if isinstance(config, dict):
-            config = GatoConfig(**config)
-        self.config = config
+
         self.embedding = nn.Embedding(self.token_sequence_length, self.layer_width)
 
     def forward(self, inputs):
@@ -573,16 +492,11 @@ class DiscreteEmbedding(nn.Module):
             self, 
             embedding_input_size,
             layer_width,
-            config
         ):
         super(DiscreteEmbedding, self).__init__()
         self.embedding_input_size = embedding_input_size
         self.layer_width = layer_width
         
-        if isinstance(config, dict):
-            config = GatoConfig(**config)
-
-        self.config = config
         self.embedding = nn.Embedding(self.embedding_input_size, self.layer_width)
 
     def forward(self, inputs):
@@ -595,16 +509,26 @@ class PatchEmbedding(nn.Module):
             self, 
             img_patch_size,
             input_dim,
-            config
+            num_group_norm_groups,
+            layer_width,
+            discretize_depth
         ):
         super(PatchEmbedding, self).__init__()
+        self.img_patch_size = img_patch_size
+        self.input_dim = input_dim
+        self.num_group_norm_groups = num_group_norm_groups
+        self.discretize_depth = discretize_depth
 
-        if isinstance(config, dict):
-            config = GatoConfig(**config)
-        self.config = config
-
-        self.residual_embedding = ResidualEmbedding(config)
-        self.pos_encoding = PatchPositionEncoding(config)
+        self.residual_embedding = ResidualEmbedding(
+            self.input_dim,
+            self.num_group_norm_groups,
+            self.layer_width
+        )
+        self.pos_encoding = PatchPositionEncoding(
+            self.input_dim,
+            self.discretize_depth,
+            self.img_patch_size
+        )
     
     def forward(self, inputs):
         input_ids, (row_pos, col_pos) = inputs
@@ -621,7 +545,6 @@ class ContinousValueTokenizer(nn.Module):
     def __init__(
             self, 
             vocab_size,
-            config, 
             mu=100, 
             m=256, 
             bins=1024
@@ -629,7 +552,6 @@ class ContinousValueTokenizer(nn.Module):
         super(ContinousValueTokenizer, self).__init__()
         self.vocab_size = vocab_size
 
-        self.config = config
         self.mu = mu
         self.m = m
         self.bins = bins
@@ -650,7 +572,6 @@ class TransformerBlock(nn.Module):
             dropout_rate,
             layer_width,
             feedforward_hidden_size,
-            config
         ):
         super(TransformerBlock, self).__init__()
 
@@ -698,13 +619,9 @@ class Transformer(nn.Module):
     def __init__(
             self, 
             num_transformer_blocks,
-            config
         ):
         super(Transformer, self).__init__()
 
-        if isinstance(config, dict):
-            config = GatoConfig(**config)
-        self.config = config
 
         self.encoders = nn.ModuleList(
             [

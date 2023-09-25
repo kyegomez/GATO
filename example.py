@@ -1,12 +1,12 @@
 import torch
-from gato.model import Gato, GatoConfig
+from gato.model import Gato
 
 # Create model instance
-config = GatoConfig.small()
-gato = Gato(config)
+
+gato = Gato()
 
 # Fake inputs for Gato
-input_dim = config.input_dim
+input_dim = gato.input_dim
 input_ids = torch.cat([
   # ...
   # observation 1

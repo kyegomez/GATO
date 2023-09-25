@@ -177,9 +177,6 @@ Licensed under the [MIT license](/LICENSE).
 
 # Roadmap:
 
-* Get functional prototype
+* Remove all configs
 
-* Integrate ALIBI, multi query, qk norm and other SOTA stuff
-
-* integrate action tokens
-
+*
