@@ -7,7 +7,6 @@
 
 * Please Help with this open source implementation in the Agora discord, ![Discord](https://img.shields.io/discord/999382051935506503)
 
-
 ### Installation
 
 ```bash
@@ -177,6 +176,4 @@ Licensed under the [MIT license](/LICENSE).
 
 # Roadmap:
 
-* Remove all configs
-
-*
+- 
