@@ -7,12 +7,13 @@
 
 * Please Help with this open source implementation in the Agora discord, ![Discord](https://img.shields.io/discord/999382051935506503)
 
-### Installation
+## Install
 
 ```bash
 $ pip install gato-torch
 ```
 
+## Usage
 ```python
 import torch
 from gato import Gato
@@ -212,5 +213,5 @@ The various datasets mentionned in the Gato paper are not all publicly available
 ## License
 Licensed under the [MIT license](/LICENSE).
 
-# Roadmap:
+# Todo:
 - Simplify inputs, robot data input, text input, video input
